@@ -251,6 +251,12 @@ SoundTouchAPI.prototype.socketStart = function(successCallback, errorCallback) {
                 var json = parser.convert(message.utf8Data);
                 if (json.updates != undefined)
                   api.socketUpdate(json.updates);
+                else if (json.SoundTouchSdkInfo != undefined) {
+                  if (this.socket.soundTouchSdkInfoListener != undefined)
+                    this.socket.soundTouchSdkInfoListener(json.SoundTouchSdkInfo);
+                } else {
+                  console.log("Other update", json);
+                }
             }
         });
     });
@@ -308,7 +314,12 @@ SoundTouchAPI.prototype.socketUpdate = function(json) {
       if (this.socket.zoneUpdated != undefined) {
           this.socket.zoneUpdated(json.zoneUpdated);
       }
-    } else {
+    } else if (json.OutputLatecyUpdated!= undefined) {
+      if (this.socket.outputLatencyUpdated != undefined) {
+          this.socket.outputLatencyUpdated(json.OutputLatecyUpdated);
+      }
+    }
+     else {
         console.log("Other update", json);
     }
 };
@@ -343,6 +354,14 @@ SoundTouchAPI.prototype.setRecentsUpdatedListener = function(handler) {
 
 SoundTouchAPI.prototype.setZoneUpdatedListener = function(handler) {
     this.socket.recentsZoneListener = handler;
+};
+
+SoundTouchAPI.prototype.setOutputLatencyUpdatedListener = function(handler) {
+    this.socket.outputLatencyUpdated = handler;
+};
+
+SoundTouchAPI.prototype.setSoundTouchSdkInfoListener = function(handler) {
+    this.socket.soundTouchSdkInfoListener = handler;
 };
 
 /*
