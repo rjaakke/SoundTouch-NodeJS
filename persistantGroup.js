@@ -1,3 +1,5 @@
+require('console-stamp')(console, '[HH:MM:ss.l]');
+
 var soundTouchDiscovery = require('./discovery');
 var isZoned = undefined;
 
@@ -11,7 +13,7 @@ soundTouchDiscovery.search(function(deviceAPI) {
     deviceAPI.setPoweredListener(function(poweredOn, nowPlaying) {
         console.log(deviceAPI.name + ' --> ' + (poweredOn ? 'Powered On' : 'Powered Off'));
         if (poweredOn && isZoned == undefined) {
-          isZoned = deviceAPI.name;
+          isZoned = deviceAPI;
           slaves = []
           console.log('Meging devices to a common zone');
           var devices = soundTouchDiscovery.getDevices();
@@ -24,17 +26,12 @@ soundTouchDiscovery.search(function(deviceAPI) {
             deviceAPI.setZone(slaves, function(t){});
         } else if (!poweredOn && isZoned) {
           console.log('Turning off all');
-          if (isZoned == deviceAPI.name){
+          if (isZoned.name == deviceAPI.name){
               isZoned = undefined;
           } else {
+            var oldMaster = isZoned;
             isZoned = undefined;
-            var devices = soundTouchDiscovery.getDevices();
-            for (var device in devices) {
-              if (device != deviceAPI.name){
-                console.log("Turning off: "+device);
-                devices[device].powerOff(function(json){});
-              }
-            }
+            oldMaster.powerOff(function(json){});
           }
         }
 
