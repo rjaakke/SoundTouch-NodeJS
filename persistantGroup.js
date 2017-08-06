@@ -37,5 +37,6 @@ soundTouchDiscovery.search(function(deviceAPI) {
 
     });
 
-    soundTouchDiscovery.stopSearching();
 });
+
+
