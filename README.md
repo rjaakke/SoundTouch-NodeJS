@@ -9,7 +9,7 @@ npm install soundtouch --save
 ```
 Start the server to make use of the HTTP API
 ```bash
-git clone https://github.com/CONNCTED/SoundTouch-NodeJS.git
+git clone https://github.com/tibnor/SoundTouch-NodeJS.git
 cd SoundTOuch-NodeJS
 npm install
 node persistantGroup.js
