@@ -220,17 +220,15 @@ SoundTouchAPI.prototype._zones = function(action, members, handler) {
         var member = members[i];
         if (i == 0) {
             item.slaves = [];
-            item.slaves.push(member);
-            data += '<member>' + member + '</member>';
-        } else  {
-            item.slaves.push(member);
-            data += '<member>' + member + '</member>';
         }
+        item.slaves.push(member);
+        data += '<member ipaddress="'+ member.ip +'">' + member.mac_address + '</member>';
+
     }
     data += '</zone>';
-
     this._setForDevice(action, data, function(json) {
-        handler(json, item);
+      handler(json, item);
+
     });
 };
 
@@ -261,7 +259,14 @@ SoundTouchAPI.prototype.socketStart = function(successCallback, errorCallback) {
         connection.on('message', function(message) {
             if (message.type === 'utf8') {
                 var json = parser.convert(message.utf8Data);
-                api.socketUpdate(json.updates);
+                if (json.updates != undefined)
+                  api.socketUpdate(json.updates);
+                else if (json.SoundTouchSdkInfo != undefined) {
+                  if (this.socket.soundTouchSdkInfoListener != undefined)
+                    this.socket.soundTouchSdkInfoListener(json.SoundTouchSdkInfo);
+                } else {
+                  console.log("Other update", json);
+                }
             }
         });
     });
@@ -319,7 +324,16 @@ SoundTouchAPI.prototype.socketUpdate = function(json) {
         if (this.socket.recentsUpdatedListener != undefined) {
             this.socket.recentsUpdatedListener(json.recentsUpdated);
         }
-    } else {
+    } else if (json.zoneUpdated != undefined) {
+      if (this.socket.zoneUpdated != undefined) {
+          this.socket.zoneUpdated(json.zoneUpdated);
+      }
+    } else if (json.OutputLatecyUpdated!= undefined) {
+      if (this.socket.outputLatencyUpdated != undefined) {
+          this.socket.outputLatencyUpdated(json.OutputLatecyUpdated);
+      }
+    }
+     else {
         console.log("Other update", json);
     }
 };
@@ -350,6 +364,18 @@ SoundTouchAPI.prototype.setNowSelectionUpdatedListener = function(handler) {
 
 SoundTouchAPI.prototype.setRecentsUpdatedListener = function(handler) {
     this.socket.recentsUpdatedListener = handler;
+};
+
+SoundTouchAPI.prototype.setZoneUpdatedListener = function(handler) {
+    this.socket.recentsZoneListener = handler;
+};
+
+SoundTouchAPI.prototype.setOutputLatencyUpdatedListener = function(handler) {
+    this.socket.outputLatencyUpdated = handler;
+};
+
+SoundTouchAPI.prototype.setSoundTouchSdkInfoListener = function(handler) {
+    this.socket.soundTouchSdkInfoListener = handler;
 };
 
 /*
